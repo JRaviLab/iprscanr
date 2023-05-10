@@ -6,17 +6,17 @@ library(Biostrings)
     dir.create(tmp)
   }
 
-  n_seqs <- nrow(fasta.index(fasta_path))
+  n_seqs <- nrow(Biostrings::fasta.index(fasta_path))
   i <- 0L
   batch_ct <- 0L
   # batch seqs into 30 to follow api reqs
   while (n_seqs > 0) {
     n_read <- ifelse(n_seqs < 30, n_seqs, 30L)
-    batch <- readAAStringSet(fasta_path, nrec = n_read, skip = i)
+    batch <- Biostrings::readAAStringSet(fasta_path, nrec = n_read, skip = i)
 
     batch_name <- paste0("batch_", batch_ct, ".faa")
     out <- file.path(tmp, batch_name)
-    writeXStringSet(batch, out)
+    Biostrings::writeXStringSet(batch, out)
 
     # substract seqs and add skipping index for next batch
     n_seqs <- n_seqs - n_read
@@ -30,7 +30,7 @@ library(Biostrings)
 
 #' @export
 # To do: auto-detect multifasta param
-submit <- function(path2seq, outfolder, outformat, email = "test@gmail.com", multifasta = FALSE, wait = TRUE) {
+ipr_submit <- function(path2seq, outfolder, outformat, email = "test@gmail.com", multifasta = FALSE, wait = TRUE) {
 
   if (!(dir.exists(outfolder))) {
     dir.create(outfolder)
