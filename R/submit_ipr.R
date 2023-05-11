@@ -9,20 +9,23 @@
 
   n_seqs <- nrow(Biostrings::fasta.index(fasta_path))
   i <- 0L
-  batch_ct <- 0L
-  # batch seqs into 30 to follow api reqs
   while (n_seqs > 0) {
-    n_read <- ifelse(n_seqs < 30, n_seqs, 30L)
-    batch <- Biostrings::readAAStringSet(fasta_path, nrec = n_read, skip = i)
+    #n_read <- ifelse(n_seqs < 30, n_seqs, 30L)
+    single_seq <- Biostrings::readAAStringSet(fasta_path, nrec = 1L, skip = i)
+    seq_header <- names(single_seq)[[1]]
+    # try to fix filenames
+    if (grepl(" ", seq_header)) {
+      seq_filename <- unlist(strsplit(seq_header, " "))[[1]]
+    }
+    else {
+      seq_filename <- stringr::str_replace_all(seq_header, "[^[:alnum:]]", "")
+    }
+    out <- file.path(tmp, seq_filename)
+    Biostrings::writeXStringSet(single_seq, out)
 
-    batch_name <- paste0("batch_", batch_ct, ".faa")
-    out <- file.path(tmp, batch_name)
-    Biostrings::writeXStringSet(batch, out)
-
-    # substract seqs and add skipping index for next batch
-    n_seqs <- n_seqs - n_read
-    i <- i + n_read
-    batch_ct <- batch_ct + 1L
+    # subtract seqs and add skipping index for next read
+    n_seqs <- n_seqs - 1L
+    i <- i + 1L
   }
   # return the tmp outfolder path
   print('Exiting .split_seqs()')
@@ -78,7 +81,7 @@
     status <- as.integer(res_get$status_code)
     cat("GET poll #", n_polls, "\t", "Status: ", status, "\n", sep = "")
     n_polls <- n_polls + 1L
-    Sys.sleep(60L)
+    Sys.sleep(30L)
   }
   if (status != 200L) {
     message <- paste0("Failed to retrieve job results for <",
@@ -119,16 +122,15 @@ ipr_submit <- function(path2seq, outfolder, user_email = "test@gmail.com") {
   cat("Multiple sequences detected", "\n", sep = "")
   split_seqs_folder <- .split_seqs(path2seq, outfolder)
 
-  batch_i <- 1L
-  batch_n <- length(list.files(split_seqs_folder))
+  seq_i <- 1L
+  seq_n <- length(list.files(split_seqs_folder))
   n_successes <- 0L
-  for (batch in list.files(split_seqs_folder)) {
-    sequence <- file.path(split_seqs_folder, batch)
-    outfile <- file.path(outfolder, strsplit(batch, ".faa"[[1]]))
-    success <- as.integer(.submit(sequence, outfile, user_email))
-    cat("Batch # ", batch_i, "/", batch_n, " completed\n", sep = "")
-    batch_i <- batch_i + 1L
-    Sys.sleep(30L)
+  for (seq_cur in list.files(split_seqs_folder)) {
+    seq_cur_path <- file.path(split_seqs_folder, seq_cur)
+    outfile <- file.path(outfolder, strsplit(seq_cur, ".faa"[[1]]))
+    success <- as.integer(.submit(seq_cur_path, outfile, user_email))
+    cat("Seq # ", seq_i, "/", seq_n, " completed\n", sep = "")
+    seq_i <- seq_i + 1L
   }
 
   cat("Full submission complete. Results located at: ", outfolder, "\n", sep = "")
