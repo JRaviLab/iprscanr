@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+
+
+<title>Building an R package</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Building an R package</h1>
+
+
+
+<div id="r-package-workshop-guide" class="section level2">
+<h2>R package workshop guide</h2>
+<p>@<a href="//github.com/jravilab/2023-glbio">GLBIO 2023</a></p>
+<div id="create-the-package-directory" class="section level3">
+<h3>Create the package directory</h3>
+<ol style="list-style-type: decimal">
+<li>Set pkg path:
+<code>pkg_path &lt;- file.path(&quot;PATH/TO/RPKG_DIR&quot;)</code></li>
+<li><code>dir.create(pkg_path)</code></li>
+<li><code>setwd(pkg_path)</code></li>
+</ol>
+</div>
+<div id="install-packages-needed-for-this-packages-development" class="section level3">
+<h3>Install packages needed for this package’s development</h3>
+<p><code>pkgs &lt;- c(&quot;devtools&quot;, &quot;BiocManager&quot;, &quot;Biostrings&quot;, &quot;httr&quot;, &quot;tidyverse)</code>
+<code>install.packages(pkgs)</code></p>
+</div>
+</div>
+<div id="create-package" class="section level2">
+<h2>Create package</h2>
+<ul>
+<li><code>library(devtools, usethis)</code></li>
+<li><code>usethis::create_package(pkg_path)</code></li>
+<li>reload libraries</li>
+<li><code>usethis::use_git()</code></li>
+<li>reload libraries</li>
+<li><code>use_r(&quot;submit_ipr.R&quot;)</code></li>
+<li>Write functions (or copy and paste)</li>
+</ul>
+<div id="paste-this-into-the-ipr_submit.r-file" class="section level3">
+<h3>Paste this into the ipr_submit.R file:</h3>
+<pre><code>.split_seqs &lt;- function(fasta_path, outfolder) {
+
+  cat(&quot;Splitting sequences\n&quot;, sep = &quot;&quot;)
+
+  tmp &lt;- file.path(outfolder, &quot;tmp&quot;)
+  if (!(dir.exists(tmp))) {
+    dir.create(tmp)
+  }
+
+  n_seqs &lt;- nrow(Biostrings::fasta.index(fasta_path))
+  i &lt;- 0L
+  while (n_seqs &gt; 0) {
+    #n_read &lt;- ifelse(n_seqs &lt; 30, n_seqs, 30L)
+    single_seq &lt;- Biostrings::readAAStringSet(fasta_path, nrec = 1L, skip = i)
+    seq_header &lt;- names(single_seq)[[1]]
+    # try to fix filenames
+    if (grepl(&quot; &quot;, seq_header)) {
+      seq_filename &lt;- unlist(strsplit(seq_header, &quot; &quot;))[[1]]
+    }
+    else {
+      seq_filename &lt;- stringr::str_replace_all(seq_header, &quot;[^[:alnum:]]&quot;, &quot;&quot;)
+    }
+    out &lt;- file.path(tmp, seq_filename)
+    Biostrings::writeXStringSet(single_seq, out)
+
+    # subtract seqs and add skipping index for next read
+    n_seqs &lt;- n_seqs - 1L
+    i &lt;- i + 1L
+  }
+  # return the tmp outfolder path
+  print(&#39;Exiting .split_seqs()&#39;)
+  return(tmp)
+}
+
+.submit &lt;- function(path2seq, outfile, user_email) {
+
+  ### POST
+  url_post &lt;- &#39;https://www.ebi.ac.uk/Tools/services/rest/iprscan5/run&#39;
+  fasta &lt;- Biostrings::readAAStringSet(path2seq)
+  fasta_header &lt;- names(fasta)[[1]]
+  sequence_str &lt;- as.character(fasta[[1]])
+  print(fasta)
+  headers_post &lt;- c(&quot;Accept: text/plain&quot;, &quot;Content-Type: application/x-www-form-urlencoded&quot;)
+
+  # job params
+  data &lt;- list(
+    email=user_email,
+    title=&quot;test&quot;,
+    goterms=&quot;false&quot;,
+    pathways=&quot;false&quot;,
+    stype=&quot;p&quot;,
+    appl=&quot;PfamA&quot;,
+    sequence=sequence_str
+  )
+
+  res_post &lt;- httr::POST(url_post, body = data, httr::add_headers(headers_post))
+  cat(&quot;Request: \n&quot;, sep = &quot;&quot;)
+  print(res_post$request)
+  if (as.integer(res_post$status) != 200L) {
+    message &lt;- paste0(&quot;POST error with sequence: &quot;, fasta_header, &quot;\n&quot;,
+                      &quot;Status code: &quot;, as.integer(res_post$status), &quot;\n&quot;)
+    warning(message)
+    return(NULL)
+  }
+  else {
+    cat(&quot;POST status: &quot;, as.integer(res_post$status), &quot;\n&quot;, sep = &quot;&quot;)
+  }
+  job_id &lt;- rawToChar(res_post$content)
+  cat(&quot;job_id: &quot;, job_id, &quot;\n&quot;, sep = &quot;&quot;)
+
+  ### GET
+  url_get_base &lt;- &quot;https://www.ebi.ac.uk/Tools/services/rest/iprscan5/result/&quot;
+  url_get &lt;- paste0(url_get_base, job_id, &quot;/tsv&quot;)
+  header_get &lt;- &quot;Accept: text/tab-separated-values&quot;
+
+  status &lt;- -1L
+  n_polls &lt;- 1L
+  # Try poll 30 times OR until status is complete
+  while (status != 200L &amp;&amp; n_polls &lt; 30L) {
+    res_get &lt;- httr::GET(url_get, httr::add_headers(header_get))
+    status &lt;- as.integer(res_get$status_code)
+    cat(&quot;GET poll #&quot;, n_polls, &quot;\t&quot;, &quot;Status: &quot;, status, &quot;\n&quot;, sep = &quot;&quot;)
+    n_polls &lt;- n_polls + 1L
+    Sys.sleep(30L)
+  }
+  if (status != 200L) {
+    message &lt;- paste0(&quot;Failed to retrieve job results for &lt;&quot;,
+                      job_id,
+                      &quot;&gt;&quot;,
+                      &quot;\n&quot;,
+                      &quot;Job exceeded 30 minutes runtime.&quot;)
+    warning(message)
+    return(NULL)
+  }
+  # parse and write tsv
+  print(rawToChar(res_get$content))
+  writeBin(res_get$content, paste0(outfile, &quot;.tsv&quot;))
+  cat(job_id, &quot; complete\n&quot;, &quot;Output file located at &quot;, outfile, &quot;\n&quot;, sep = &quot;&quot;)
+
+  return(TRUE)
+}
+
+submit_ipr &lt;- function(path2seq, outfolder, email) {
+#&#39; @export
+#&#39; @title Submit IPRscan analysis for protein sequences (multifasta input)
+#&#39; @param path2seq path to your sequence file
+#&#39; @param outfolder location for IPRscan outputs
+#&#39; @param email required email ID for job submission (to track and prevent accidental misuse of the API)
+#&#39; @keywords domains, domain architectures, protein characterization
+
+  outfolder &lt;- file.path(outfolder)
+  if (!(dir.exists(outfolder))) {
+    dir.create(outfolder)
+  }
+
+  # test if input is a multifasta file
+  n_seqs &lt;- nrow(Biostrings::fasta.index(path2seq))
+
+  if (n_seqs == 1L) {
+    cat(&quot;Single sequence detected&quot;, &quot;\n&quot;, sep = &quot;&quot;)
+    outfile &lt;- file.path(outfolder, &quot;iprout&quot;)
+    .submit(path2seq, outfile, email)
+    cat(&quot;Full submission complete. Results located at: &quot;,
+        outfolder, &quot;\n&quot;, sep = &quot;&quot;)
+    return(outfolder)
+  }
+
+  cat(&quot;Multiple sequences detected&quot;, &quot;\n&quot;, sep = &quot;&quot;)
+  split_seqs_folder &lt;- .split_seqs(path2seq, outfolder)
+
+  seq_i &lt;- 1L
+  seq_n &lt;- length(list.files(split_seqs_folder))
+  n_successes &lt;- 0L
+  for (seq_cur in list.files(split_seqs_folder)) {
+    seq_cur_path &lt;- file.path(split_seqs_folder, seq_cur)
+    outfile &lt;- file.path(outfolder, strsplit(seq_cur, &quot;.faa&quot;[[1]]))
+    success &lt;- as.integer(.submit(seq_cur_path, outfile, email))
+    cat(&quot;Seq # &quot;, seq_i, &quot;/&quot;, seq_n, &quot; completed\n&quot;, sep = &quot;&quot;)
+    seq_i &lt;- seq_i + 1L
+  }
+
+  cat(&quot;Full submission complete. Results located at: &quot;,
+      outfolder, &quot;\n&quot;, sep = &quot;&quot;)
+  return(outfolder)
+}</code></pre>
+<ul>
+<li><strong>Access the local package’s functions</strong>:
+<code>load_all()</code></li>
+</ul>
+<hr />
+</div>
+<div id="test" class="section level3">
+<h3>Test</h3>
+<ul>
+<li><p>Create a folder to house sample data:
+<code>dir.create(file.path(pkg_path, &quot;inst&quot;, &quot;extdata&quot;), recursive = TRUE)</code></p></li>
+<li><p>Create a file called “input.faa” and paste the following content
+inside</p></li>
+</ul>
+<pre><code>&gt;CAA75348.1 voltage gated potassium channel [Homo sapiens]
+MVQKSRNGGVYPGPSGEKKLKVGFVGLDPGAPDSTRDGALLIAGSEAPKRGSILSKPRAGGAGAGKPPKR
+NAFYRKLQNFLYNVLERPRGWAFIYHAYVFLLVFSCLVLSVFSTIKEYEKSSEGALYILEIVTIVVFGVE
+YFVRIWAAGCCCRYRGWRGRLKFARKPFCVIDIMVLIASIAVLAAGSQGNVFATSALRSLRFLQILRMIR
+MDRRGGTWKLLGSVVYAHSKELVTAWYIGFLCLILASFLVYLAEKGENDHFDTYADALWWGLITLTTIGY
+GDKYPQTWNGRLLAATFTLIGVSFFALPAGILGSGFALKVQEQHRQKHFEKRRNPAAGLIQSAWRFYATN
+LSRTDLHSTWQYYERTVTVPMYRLIPPLNQLELLRNLKSKSGLAFRKDPPPEPSPSQKVSLKDRVFSSPR
+GVAAKGKGSPQAQTVRRSPSADQSLEDSPSKVPKSWSFGDRSRARQAFRIKGAASRQNSEEASLPGEDIV
+DDKSCPCEFVTEDLTPGLKVSIRAVCVMRFLVSKRKFKESLRPYDVMDVIEQYSAGHLDMLSRIKSLQSR
+VDQIVGRGPAITDKDRTKGPAEAELPEDPSMMGRLGKVEKQVLSMEKKLDFLVNIYMQRMGIPPTETEAY
+FGAKEPEPAPPYHSPEDSREHVDRHGCIVKIVRSSSSTGQKNFSAPPAAPPVQCPPSTSWQPQSHPRQGH
+GTSPVGDHGSLVRIPPPPAHERSLSAYGGGNRASMEFLRQEDTPGCRPPEGTLRDSDTSISIPSVDHEEL
+ERSFSGFSISQSKENLDALNSCYAAVAPCAKVRPYIAEGESDTDSDLCTPCGPPPRSATGEGPFGDVGWA
+GPRK
+</code></pre>
+<ul>
+<li><p>Submit job using the library’s function:
+<code>ipr_submit(file.path(&quot;./inst/extdata/input.faa&quot;), &quot;single-out&quot;)</code></p></li>
+<li><p>Check output:
+<code>readLines(&quot;./single-out/iprout.tsv&quot;)</code></p></li>
+</ul>
+<p><strong>Note</strong>: You can reference files within a package
+directory, such as data files, by using:
+<code>system.file(&quot;PATH/FROM/PKG/ROOT/&quot;, package = &quot;PKGNAME)</code></p>
+<p>This is useful for scripts that need to access data from their
+package. If a user loads the library on their computer, this provides a
+way to find the proper path to the package’s data contents.</p>
+<p>For example,</p>
+<p><code>readLines(system.file(&quot;single-out/iprout.tsv&quot;, package = &quot;testPkg&quot;))</code></p>
+</div>
+</div>
+<div id="final-checks" class="section level2">
+<h2>Final checks</h2>
+<ul>
+<li>Check if the package can build properly:
+<code>devtools::check()</code></li>
+<li>Fix any errors/warnings</li>
+<li>Create a license: <code>usethis::use_mit_license()</code></li>
+<li>Specify imports/depends: <code>usethis::use_package()</code></li>
+<li><code>usethis::use_package(&#39;httr&#39;)</code></li>
+<li><code>usethis::use_package(&#39;Biostrings&#39;)</code></li>
+<li><code>usethis::use_package(&#39;stringr&#39;)</code></li>
+<li>Edit DESCRIPTION file
+<ul>
+<li>Title</li>
+<li>Author</li>
+<li>Description</li>
+</ul></li>
+<li>To document, place cursor inside a function definition block:
+<code>Code &gt; Insert Roxygen Skeleton</code>
+<ul>
+<li>Fill out fields</li>
+</ul></li>
+<li><code>document()</code>
+<ul>
+<li>Creates a .Rd file in the man/ folder</li>
+<li>Updates namespace with exported functions</li>
+</ul></li>
+<li>Recheck: <code>devtools::check()</code></li>
+<li>Install and test:
+<ul>
+<li><code>install()</code></li>
+<li><code>library(testPkg)</code></li>
+<li>View help: <code>?testPkg::ipr_submit</code></li>
+<li><code>testPkg::ipr_submit(...)</code></li>
+</ul></li>
+</ul>
+</div>
+<div id="next-steps" class="section level2">
+<h2>Next steps</h2>
+<ul>
+<li>Pushing to GitHub</li>
+<li><code>use_testthat()</code> for streamlined testing</li>
+<li>Publishing to GitHub, BioConductor, or CRAN.</li>
+</ul>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
