@@ -1,0 +1,67 @@
+---
+title: "rIPRscan"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{IPRscan}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+Welcome to the alpha-testing phase of `riprscan`, premiered at [GLBIO 2023](https://github.com/jravilab/2023-glbio)!
+
+Interested in running detailed a combination of evolutionary and domain architecture analyses for your protein(s) of interest? Check out our recent web-app, [MolEvolvR](http://jravilab.org/molevolvr) and associated [preprint](https://doi.org/10.1101/2022.02.18.461833) -- where we do all of these for you, and more!
+
+## Fasta --> protein scan outputs
+Users can submit a single/multifasta file (amino acid/protein sequences)
+to receive detailed protein scan analyses, including match to domain profiles, localization, signal, and disorder predictions. Learn more about IPRscan [here](https://www.ebi.ac.uk/interpro/search/sequence/).
+
+
+```{r submit_ipr, eval=F}
+library(rinterpro)
+submit_ipr(path2seq = here("inst/extdata/ex-in-CAA75348.1.faa"),
+           outfolder = here("inst/extdata"),
+           email = "jravilab.msu@gmail.com")
+```
+
+## Cleaning up your output data
+_Coming soon!_
+
+```{r cleanup, eval=FALSE}
+cleanup_iprout(inpath='path/to/iprout', outpath='path/to/iprcln')
+
+ipr2domarch(inpath='path/to/iprcln', outpath='path/to/ipr_da')
+
+cleanup_domarch(prot='path/to/ipr_da',
+                old = "DomArch.orig", new = "DomArch",
+                domains_keep, domains_rename,
+                repeat2s=TRUE, remove_tails = FALSE,
+                remove_empty=F,
+                domains_ignore=NULL)
+
+```
+
+## Visualizing your data
+_Coming soon!_
+```{r ipr2viz, eval=FALSE}
+ipr2viz(infile_ipr = 'path/to/iprout', infile_full = 'path/to/metadata',
+        accessions = c(), analysis = c("Pfam", "Phobius", "Gene3D"),
+        group_by = "Analysis", topn = 20,
+        name = "Name", text_size = 10, query = 'All')
+
+```
+
+## Questions/Feedback?
+```{r q, eval=T, echo=F, background=T}
+library(fontawesome)
+```
+-   `r fa("link", fill = "gray80")` [jravilab.github.io](https://jravilab.github.io)
+-   `r fa("twitter", fill = "gray80")` [JRaviLab](https://twitter.com/jravilab)
+-   `r fa("github", fill = "gray80")` [JRaviLab](https://github.com/jravilab)
+-   Questions? [email us](mailto:janani.ravi@cuanschutz.edu)

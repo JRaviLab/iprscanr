@@ -12,7 +12,10 @@ RoxygenNote: 7.2.3
 Imports:
     BiocManager,
     Biostrings,
-    dplyr,
+    tidyverse,
     httr,
-    readr,
-    tibble
+    here
+Suggests: 
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr

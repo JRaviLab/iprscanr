@@ -100,22 +100,28 @@
   return(TRUE)
 }
 
+submit_ipr <- function(path2seq, outfolder, email) {
 #' @export
-ipr_submit <- function(path2seq, outfolder, user_email = "test@gmail.com") {
+#' @title Submit IPRscan analysis for protein sequences (multifasta input)
+#' @param path2seq path to your sequence file
+#' @param outfolder location for IPRscan outputs
+#' @param email required email ID for job submission (to track and prevent accidental misuse of the API)
+#' @keywords domains, domain architectures, protein characterization
 
   outfolder <- file.path(outfolder)
   if (!(dir.exists(outfolder))) {
     dir.create(outfolder)
   }
 
-  # test if multifasta
+  # test if input is a multifasta file
   n_seqs <- nrow(Biostrings::fasta.index(path2seq))
 
   if (n_seqs == 1L) {
     cat("Single sequence detected", "\n", sep = "")
     outfile <- file.path(outfolder, "iprout")
-    .submit(path2seq, outfile, user_email)
-    cat("Full submission complete. Results located at: ", outfolder, "\n", sep = "")
+    .submit(path2seq, outfile, email)
+    cat("Full submission complete. Results located at: ",
+        outfolder, "\n", sep = "")
     return(outfolder)
   }
 
@@ -128,11 +134,12 @@ ipr_submit <- function(path2seq, outfolder, user_email = "test@gmail.com") {
   for (seq_cur in list.files(split_seqs_folder)) {
     seq_cur_path <- file.path(split_seqs_folder, seq_cur)
     outfile <- file.path(outfolder, strsplit(seq_cur, ".faa"[[1]]))
-    success <- as.integer(.submit(seq_cur_path, outfile, user_email))
+    success <- as.integer(.submit(seq_cur_path, outfile, email))
     cat("Seq # ", seq_i, "/", seq_n, " completed\n", sep = "")
     seq_i <- seq_i + 1L
   }
 
-  cat("Full submission complete. Results located at: ", outfolder, "\n", sep = "")
+  cat("Full submission complete. Results located at: ",
+      outfolder, "\n", sep = "")
   return(outfolder)
 }
