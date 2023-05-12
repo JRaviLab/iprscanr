@@ -5,9 +5,9 @@ Authors@R:
         c(
         person("Jacob", "Krol", "jacob.krol@cuanschutz.edu", role = c("aut", "cre"),
         comment = c(ORCID = "YOUR-ORCID-ID")),
-        person("Faisal", "Alquaddoomi", "faisal.alquaddoomi@cuanschutz.edu", role = c("aut", "cre"),
-        comment = c(ORCID = "YOUR-ORCID-ID")),
-        person("Janani", "Ravi", email = "janani.ravi@cuanschutz.edu", role = c("aut", "cre"),
+        person("Faisal", "Alquaddoomi", "faisal.alquaddoomi@cuanschutz.edu", role = c("aut"),
+        comment = c(ORCID = "0000-0003-4297-8747")),
+        person("Janani", "Ravi", email = "janani.ravi@cuanschutz.edu", role = c("aut"),
         comment=c(ORCID="0000-0001-7443-925X"))
         )
 Description: iprscanr provides functions to easily access the InterProScan5 API and cleanup results. In short, InterPro is a service provided by the European Bioinformatics Institute (EBI) that compares sequences with their supported member databases to annotate funcitonal and structural regions of a query sequence.
