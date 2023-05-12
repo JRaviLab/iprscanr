@@ -76,12 +76,12 @@
   status <- -1L
   n_polls <- 1L
   # Try poll 30 times OR until status is complete
-  while (status != 200L && n_polls < 30L) {
+  while (status != 200L && n_polls < 180L) {
     res_get <- httr::GET(url_get, httr::add_headers(header_get))
     status <- as.integer(res_get$status_code)
     cat("GET poll #", n_polls, "\t", "Status: ", status, "\n", sep = "")
     n_polls <- n_polls + 1L
-    Sys.sleep(30L)
+    Sys.sleep(5L)
   }
   if (status != 200L) {
     message <- paste0("Failed to retrieve job results for <",
