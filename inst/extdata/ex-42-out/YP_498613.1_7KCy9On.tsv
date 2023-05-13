@@ -1,0 +1,4 @@
+EMBOSS_001	290bea59b06d446ae5a1915696f1ac24	644	Pfam	PF01751	Toprim domain	430	541	7.5E-17	T	13-05-2023	IPR006171	TOPRIM domain
+EMBOSS_001	290bea59b06d446ae5a1915696f1ac24	644	Pfam	PF00204	DNA gyrase B	232	401	3.4E-62	T	13-05-2023	IPR013506	DNA topoisomerase, type IIA, subunit B, domain 2
+EMBOSS_001	290bea59b06d446ae5a1915696f1ac24	644	Pfam	PF00986	DNA gyrase B subunit, carboxyl terminus	574	634	3.3E-30	T	13-05-2023	IPR002288	DNA gyrase B subunit, C-terminal
+EMBOSS_001	290bea59b06d446ae5a1915696f1ac24	644	Pfam	PF02518	Histidine kinase-, DNA gyrase B-, and HSP90-like ATPase	40	180	3.6E-21	T	13-05-2023	IPR003594	Histidine kinase/HSP90-like ATPase

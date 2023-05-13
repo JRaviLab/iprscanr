@@ -1,0 +1,5 @@
+InputFile	SeqMD5Digest	SLength	Analysis	DB.ID	SignDesc	StartLoc	StopLoc	Score	Status	RunDate	IPRAcc	IPRDesc
+EMBOSS_001	d5d089fb0990f2c287394cc9622a87e4	844	Pfam	PF11956	Ankyrin-G binding motif of KCNQ2-3	741	840	2.1e-46	TRUE	13-05-2023	IPR020969	Ankyrin-G binding site
+EMBOSS_001	d5d089fb0990f2c287394cc9622a87e4	844	Pfam	PF16642	Unstructured region on Potassium channel subunit alpha KvLQT2	637	727	7.2e-38	TRUE	13-05-2023	-	-
+EMBOSS_001	d5d089fb0990f2c287394cc9622a87e4	844	Pfam	PF03520	KCNQ voltage-gated potassium channel	438	622	1.3e-92	TRUE	13-05-2023	IPR013821	Potassium channel, voltage dependent, KCNQ, C-terminal
+EMBOSS_001	d5d089fb0990f2c287394cc9622a87e4	844	Pfam	PF00520	Ion transport protein	96	318	1.7e-29	TRUE	13-05-2023	IPR005821	Ion transport domain

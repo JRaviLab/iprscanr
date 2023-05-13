@@ -1,0 +1,4 @@
+EMBOSS_001	73df98481edbb3ff681f8134721ecd69	608	Pfam	PF00512	His Kinase A (phospho-acceptor) domain	376	441	1.0E-18	T	13-05-2023	IPR003661	Signal transduction histidine kinase, dimerisation/phosphoacceptor domain
+EMBOSS_001	73df98481edbb3ff681f8134721ecd69	608	Pfam	PF02518	Histidine kinase-, DNA gyrase B-, and HSP90-like ATPase	487	598	3.6E-27	T	13-05-2023	IPR003594	Histidine kinase/HSP90-like ATPase
+EMBOSS_001	73df98481edbb3ff681f8134721ecd69	608	Pfam	PF13426	PAS domain	274	368	9.0E-8	T	13-05-2023	IPR000014	PAS domain
+EMBOSS_001	73df98481edbb3ff681f8134721ecd69	608	Pfam	PF00672	HAMP domain	201	252	4.2E-14	T	13-05-2023	IPR003660	HAMP domain
