@@ -1,0 +1,3 @@
+EMBOSS_001	6857fe9b88e97dfd7d6af80554706eaa	453	Pfam	PF11638	DnaA N-terminal domain	5	64	8.0E-7	T	13-05-2023	IPR024633	DnaA N-terminal domain
+EMBOSS_001	6857fe9b88e97dfd7d6af80554706eaa	453	Pfam	PF08299	Bacterial dnaA protein helix-turn-helix	361	429	1.1E-30	T	13-05-2023	IPR013159	Chromosomal replication initiator, DnaA C-terminal
+EMBOSS_001	6857fe9b88e97dfd7d6af80554706eaa	453	Pfam	PF00308	Bacterial dnaA  protein	117	332	7.6E-102	T	13-05-2023	IPR013317	Chromosomal replication initiator protein DnaA

@@ -1,0 +1,3 @@
+EMBOSS_001	3c2676ec9eb3511e920d451652a69f40	377	Pfam	PF02767	DNA polymerase III beta subunit, central domain	137	251	3.0E-42	T	13-05-2023	IPR022637	DNA polymerase III, beta sliding clamp, central
+EMBOSS_001	3c2676ec9eb3511e920d451652a69f40	377	Pfam	PF00712	DNA polymerase III beta subunit, N-terminal domain	2	128	5.0E-41	T	13-05-2023	IPR022634	DNA polymerase III, beta sliding clamp, N-terminal
+EMBOSS_001	3c2676ec9eb3511e920d451652a69f40	377	Pfam	PF02768	DNA polymerase III beta subunit, C-terminal domain	254	375	1.5E-40	T	13-05-2023	IPR022635	DNA polymerase III, beta sliding clamp, C-terminal

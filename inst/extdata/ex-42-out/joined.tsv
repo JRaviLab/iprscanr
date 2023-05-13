@@ -1,0 +1,57 @@
+InputFile	SeqMD5Digest	SLength	Analysis	DB.ID	SignDesc	StartLoc	StopLoc	Score	Status	RunDate	IPRAcc	IPRDesc
+YP_008530241.1_EagGPOq	4c265995cda5572bb7b141856391af75	63	Pfam	PF17259	Family of unknown function (DUF5325)	4	60	2e-12	T	13-05-2023	IPR035211	Protein of unknown function DUF5325
+YP_008530243.1_DCikSaf	001570d56483a38ab58fb677d75c5efb	120	Pfam	PF01741	Large-conductance mechanosensitive channel, MscL	1	116	1.3e-39	T	13-05-2023	IPR037673	Large-conductance mechanosensitive channel/anditomin synthesis protein L
+YP_498609.1_AEj8Lu6	0e49c8543fa37bcfb6b13146ae461a22	102	Pfam	PF00338	Ribosomal protein S10p/S20e	7	101	1.1e-34	T	13-05-2023	IPR027486	Ribosomal protein S10 domain
+YP_498609.1_AEj8Lu6	6857fe9b88e97dfd7d6af80554706eaa	453	Pfam	PF11638	DnaA N-terminal domain	5	64	8e-07	T	13-05-2023	IPR024633	DnaA N-terminal domain
+YP_498609.1_AEj8Lu6	6857fe9b88e97dfd7d6af80554706eaa	453	Pfam	PF08299	Bacterial dnaA protein helix-turn-helix	361	429	1.1e-30	T	13-05-2023	IPR013159	Chromosomal replication initiator, DnaA C-terminal
+YP_498610.1_lvrGsN3	6857fe9b88e97dfd7d6af80554706eaa	453	Pfam	PF00308	Bacterial dnaA  protein	117	332	7.6e-102	T	13-05-2023	IPR013317	Chromosomal replication initiator protein DnaA
+YP_498610.1_lvrGsN3	3c2676ec9eb3511e920d451652a69f40	377	Pfam	PF02767	DNA polymerase III beta subunit, central domain	137	251	3e-42	T	13-05-2023	IPR022637	DNA polymerase III, beta sliding clamp, central
+YP_498610.1_lvrGsN3	3c2676ec9eb3511e920d451652a69f40	377	Pfam	PF00712	DNA polymerase III beta subunit, N-terminal domain	2	128	5e-41	T	13-05-2023	IPR022634	DNA polymerase III, beta sliding clamp, N-terminal
+YP_498611.1_Llpj0Eg	3c2676ec9eb3511e920d451652a69f40	377	Pfam	PF02768	DNA polymerase III beta subunit, C-terminal domain	254	375	1.5e-40	T	13-05-2023	IPR022635	DNA polymerase III, beta sliding clamp, C-terminal
+YP_498612.1_thzfGAA	10c27d6f664a4333d064f35eddb179f7	81	Pfam	PF13275	S4 domain	14	64	1.5e-20	T	13-05-2023	-	-
+YP_498613.1_7KCy9On	cab8e59827818680ed79454e4c87b542	370	Pfam	PF02463	RecF/RecN/SMC N terminal domain	3	347	3.5e-16	T	13-05-2023	IPR003395	RecF/RecN/SMC, N-terminal
+YP_498613.1_7KCy9On	290bea59b06d446ae5a1915696f1ac24	644	Pfam	PF01751	Toprim domain	430	541	7.5e-17	T	13-05-2023	IPR006171	TOPRIM domain
+YP_498613.1_7KCy9On	290bea59b06d446ae5a1915696f1ac24	644	Pfam	PF00204	DNA gyrase B	232	401	3.4e-62	T	13-05-2023	IPR013506	DNA topoisomerase, type IIA, subunit B, domain 2
+YP_498613.1_7KCy9On	290bea59b06d446ae5a1915696f1ac24	644	Pfam	PF00986	DNA gyrase B subunit, carboxyl terminus	574	634	3.3e-30	T	13-05-2023	IPR002288	DNA gyrase B subunit, C-terminal
+YP_498614.1_dQPxdFE	290bea59b06d446ae5a1915696f1ac24	644	Pfam	PF02518	Histidine kinase-, DNA gyrase B-, and HSP90-like ATPase	40	180	3.6e-21	T	13-05-2023	IPR003594	Histidine kinase/HSP90-like ATPase
+YP_498614.1_dQPxdFE	fce0b66ed975353f0016a50fe35bcd84	887	Pfam	PF00521	DNA gyrase/topoisomerase IV, subunit A	33	473	0	T	13-05-2023	IPR002205	DNA topoisomerase, type IIA, domain A
+YP_498614.1_dQPxdFE	fce0b66ed975353f0016a50fe35bcd84	887	Pfam	PF03989	DNA gyrase C-terminal domain, beta-propeller	614	658	4.8e-10	T	13-05-2023	IPR006691	DNA gyrase/topoisomerase IV, subunit A, C-terminal repeat
+YP_498614.1_dQPxdFE	fce0b66ed975353f0016a50fe35bcd84	887	Pfam	PF03989	DNA gyrase C-terminal domain, beta-propeller	507	550	1.3e-11	T	13-05-2023	IPR006691	DNA gyrase/topoisomerase IV, subunit A, C-terminal repeat
+YP_498614.1_dQPxdFE	fce0b66ed975353f0016a50fe35bcd84	887	Pfam	PF03989	DNA gyrase C-terminal domain, beta-propeller	713	754	5.5e-12	T	13-05-2023	IPR006691	DNA gyrase/topoisomerase IV, subunit A, C-terminal repeat
+YP_498614.1_dQPxdFE	fce0b66ed975353f0016a50fe35bcd84	887	Pfam	PF03989	DNA gyrase C-terminal domain, beta-propeller	764	810	1.1e-10	T	13-05-2023	IPR006691	DNA gyrase/topoisomerase IV, subunit A, C-terminal repeat
+YP_498614.1_dQPxdFE	fce0b66ed975353f0016a50fe35bcd84	887	Pfam	PF03989	DNA gyrase C-terminal domain, beta-propeller	661	706	1.8e-13	T	13-05-2023	IPR006691	DNA gyrase/topoisomerase IV, subunit A, C-terminal repeat
+YP_498615.1_0VELriR	fce0b66ed975353f0016a50fe35bcd84	887	Pfam	PF03989	DNA gyrase C-terminal domain, beta-propeller	556	605	2.3e-10	T	13-05-2023	IPR006691	DNA gyrase/topoisomerase IV, subunit A, C-terminal repeat
+YP_498616.1_g1j1I7R	ab79cd3b10f36bf59d1584f4d5b2f9b1	233	Pfam	PF01256	Carbohydrate kinase	1	225	2e-51	T	13-05-2023	IPR000631	ATP/ADP-dependent (S)-NAD(P)H-hydrate dehydratase
+YP_498617.1_nLmic16	65537c8dbb7a4be340504b77f906fb66	504	Pfam	PF00221	Aromatic amino acid lyase	10	470	0	T	13-05-2023	IPR001106	Aromatic amino acid lyase
+YP_498617.1_nLmic16	935bbfa3a4b384249717cf2b1b9173cf	428	Pfam	PF00587	tRNA synthetase class II core domain (G, H, P, S and T)	223	400	7.9e-33	T	13-05-2023	IPR002314	Aminoacyl-tRNA synthetase, class II (G/ P/ S/T)
+YP_498618.1_QTvif4D	935bbfa3a4b384249717cf2b1b9173cf	428	Pfam	PF02403	Seryl-tRNA synthetase N-terminal domain	1	107	7e-33	T	13-05-2023	IPR015866	Serine-tRNA synthetase, type1, N-terminal
+YP_498619.1_GVRUxmD	0e38be4f67686110d7e5b3edd9bf4e97	231	Pfam	PF03591	AzlC protein	16	156	5.3e-37	T	13-05-2023	IPR011606	Branched-chain amino acid transport, permease
+YP_498620.1_BK67Gvf	83f0063e60f0a6e5b3d8391b13b01ede	109	Pfam	PF05437	Branched-chain amino acid transport protein (AzlD)	8	106	4.4e-24	T	13-05-2023	IPR008407	Branched-chain amino acid transport, AzlD
+YP_498621.1_G2fHvke	ec2de1868e85b6b2ffbf1d672019169d	322	Pfam	PF00561	alpha/beta hydrolase fold	38	302	2.9e-15	T	13-05-2023	IPR000073	Alpha/beta hydrolase fold-1
+YP_498622.1_rKuX1EZ	63d1ec4aca3986669deee9d1c399b00b	312	Pfam	PF09991	Predicted membrane protein (DUF2232)	20	298	7.4e-63	T	13-05-2023	IPR018710	Protein of unknown function DUF2232
+YP_498622.1_rKuX1EZ	56610a6f8d2729b200b71ac9be8f6fb9	655	Pfam	PF01368	DHH family	337	494	3.1e-21	T	13-05-2023	IPR001667	DDH domain
+YP_498623.1_50JerVl	56610a6f8d2729b200b71ac9be8f6fb9	655	Pfam	PF02272	DHHA1 domain	516	645	3e-11	T	13-05-2023	IPR003156	DHHA1 domain
+YP_498623.1_50JerVl	167e2f8a3407dc71a6610b93a59c7aab	150	Pfam	PF03948	Ribosomal protein L9, C-terminal domain	65	148	1.2e-27	T	13-05-2023	IPR020069	Ribosomal protein L9, C-terminal
+YP_498624.1_UZtyrZo	167e2f8a3407dc71a6610b93a59c7aab	150	Pfam	PF01281	Ribosomal protein L9, N-terminal domain	1	49	1.2e-19	T	13-05-2023	IPR020070	Ribosomal protein L9, N-terminal
+YP_498624.1_UZtyrZo	96d77eaa05cd49e011545d02280144cb	466	Pfam	PF03796	DnaB-like helicase C terminal domain	185	457	3.5e-114	T	13-05-2023	IPR007694	DNA helicase, DnaB-like, C-terminal
+YP_498625.1_6QXcVTY	96d77eaa05cd49e011545d02280144cb	466	Pfam	PF00772	DnaB-like helicase N terminal domain	10	110	1.6e-33	T	13-05-2023	IPR007693	DNA helicase, DnaB-like, N-terminal
+YP_498626.1_8i2yhG1	828562d50c8f51bc186821e5b4ccd5d3	427	Pfam	PF00709	Adenylosuccinate synthetase	5	420	0	T	13-05-2023	IPR001114	Adenylosuccinate synthetase
+YP_498626.1_8i2yhG1	1fed1b6d61953e0a18555402f127e76d	233	Pfam	PF00072	Response regulator receiver domain	5	114	3.2e-29	T	13-05-2023	IPR001789	Signal transduction response regulator, receiver domain
+YP_498627.1_eVqE65Z	1fed1b6d61953e0a18555402f127e76d	233	Pfam	PF00486	Transcriptional regulatory protein, C terminal	153	229	5e-28	T	13-05-2023	IPR001867	OmpR/PhoB-type DNA-binding domain
+YP_498627.1_eVqE65Z	73df98481edbb3ff681f8134721ecd69	608	Pfam	PF00512	His Kinase A (phospho-acceptor) domain	376	441	1e-18	T	13-05-2023	IPR003661	Signal transduction histidine kinase, dimerisation/phosphoacceptor domain
+YP_498627.1_eVqE65Z	73df98481edbb3ff681f8134721ecd69	608	Pfam	PF02518	Histidine kinase-, DNA gyrase B-, and HSP90-like ATPase	487	598	3.6e-27	T	13-05-2023	IPR003594	Histidine kinase/HSP90-like ATPase
+YP_498627.1_eVqE65Z	73df98481edbb3ff681f8134721ecd69	608	Pfam	PF13426	PAS domain	274	368	9e-08	T	13-05-2023	IPR000014	PAS domain
+YP_498628.1_2mfnM23	73df98481edbb3ff681f8134721ecd69	608	Pfam	PF00672	HAMP domain	201	252	4.2e-14	T	13-05-2023	IPR003660	HAMP domain
+YP_498629.1_KJ1Jo17	08669299efab73924eab647a45aed2a6	427	Pfam	PF07435	YycH protein	1	424	7.8e-128	T	13-05-2023	IPR009996	Regulatory protein YycH
+YP_498630.1_WaNJGyZ	cd86db12ac7425f294de84e520fe1694	262	Pfam	PF09648	YycI protein	38	253	2.4e-52	T	13-05-2023	IPR018604	Regulatory protein YycH-like
+YP_498633.1_OPOD0mY	24e43a1c8d9e461104d7e57526d560b1	266	Pfam	PF00753	Metallo-beta-lactamase superfamily	14	220	1.8e-22	T	13-05-2023	IPR001279	Metallo-beta-lactamase
+YP_498636.1_aRQPOjv	4b2ea77532e5f37360974f744cb39666	159	Pfam	PF02590	Predicted SPOUT methyltransferase	1	158	8e-61	T	13-05-2023	IPR003742	RNA methyltransferase RlmH
+YP_498637.1_F9UPSS5	1400f3171c6e8c681b55ce9ce5e137fe	581	Pfam	PF19614	Family of unknown function (DUF6119)	29	479	1.4e-30	T	13-05-2023	IPR026487	Sporadically distributed protein CHP04141
+YP_498639.1_GYB815A	b3fa9a161e94f676e8f1e1b745c974cc	150	Pfam	PF01207	Dihydrouridine synthase (Dus)	11	137	1.6e-11	T	13-05-2023	IPR035587	DUS-like, FMN-binding domain
+YP_498640.1_1KO6prL	70bfbb8b7608e7a9972d7c61bef9792d	251	Pfam	PF01925	Sulfite exporter TauE/SafE	10	247	9.4e-42	T	13-05-2023	IPR002781	Transmembrane protein TauE-like
+YP_498641.1_r0K6ku0	a8da455a2111cd4e2cce993019cb28c3	86	Pfam	PF02583	Metal-sensitive transcriptional repressor	4	83	9.1e-25	T	13-05-2023	IPR003735	Metal-sensitive transcriptional repressor
+YP_498641.1_r0K6ku0	6d33586c3c1138f0c89291f37f15f687	355	Pfam	PF01206	Sulfurtransferase TusA	120	188	3.7e-17	T	13-05-2023	IPR001455	TusA-like domain
+YP_498641.1_r0K6ku0	6d33586c3c1138f0c89291f37f15f687	355	Pfam	PF13686	DsrE/DsrF/DrsH-like family	201	354	3e-55	T	13-05-2023	IPR032836	DsrE2-like family
+YP_498642.1_LEWVFsK	6d33586c3c1138f0c89291f37f15f687	355	Pfam	PF00581	Rhodanese-like domain	15	98	1.7e-15	T	13-05-2023	IPR001763	Rhodanese-like domain
+YP_498642.1_LEWVFsK	a2fb27e3bbd7126da1da3db2b8cfb718	444	Pfam	PF00581	Rhodanese-like domain	359	439	5.8e-12	T	13-05-2023	IPR001763	Rhodanese-like domain
+YP_498642.1_LEWVFsK	a2fb27e3bbd7126da1da3db2b8cfb718	444	Pfam	PF00753	Metallo-beta-lactamase superfamily	13	168	1.6e-09	T	13-05-2023	IPR001279	Metallo-beta-lactamase

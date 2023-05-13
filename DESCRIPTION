@@ -18,9 +18,12 @@ RoxygenNote: 7.2.3
 Imports:
     BiocManager,
     Biostrings,
-    tidyverse,
     httr,
-    here
+    here,
+    readr,
+    tibble,
+    dplyr,
+    stringr
 Suggests: 
     knitr,
     rmarkdown
