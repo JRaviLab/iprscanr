@@ -153,7 +153,6 @@
 }
 
 .get_running_jobs <- function() {
-  print(tb_status)
   # handle case when tb_status is not yet init (or has NULL values)
   #   needed for iterative calls to .get_running_jobs
   n_running <- tryCatch(
