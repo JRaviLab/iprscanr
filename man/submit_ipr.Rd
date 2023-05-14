@@ -4,7 +4,7 @@
 \alias{submit_ipr}
 \title{Submit IPRscan analysis for protein sequences (multifasta input)}
 \usage{
-submit_ipr(path2seq, outfolder, user_email)
+submit_ipr(path2seq, outfolder, email)
 }
 \arguments{
 \item{path2seq}{path to your sequence file}

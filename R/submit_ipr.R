@@ -1,5 +1,3 @@
-## Internal and user-facing functions to submit multifasta files to IPRscan
-
 .split_seqs <- function(fasta_path, outfolder) {
   cat("Splitting sequences\n", sep = "")
 
@@ -23,9 +21,9 @@
       seq_filename <- stringr::str_replace_all(seq_header, "[^[:alnum:]]", "")
     }
     # add a random suffix and '.faa' extension
-    random_suffix <- paste0(sample(c(letters, LETTERS, 0:9),
-                                   size = 7, replace = TRUE),
-                            collapse = "")
+    random_suffix <- paste0(sample(c(letters, LETTERS, 0:9), size = 7, replace = TRUE),
+      collapse = ""
+    )
     seq_filename <- paste0(seq_filename, "_", random_suffix, ".faa")
     cat("tmp: ", tmp, "seq_filename: ", seq_filename, "\n", sep = "")
     Biostrings::writeXStringSet(single_seq, file.path(tmp, seq_filename))
@@ -73,19 +71,19 @@
   # return(job_code)
 }
 
-.submit <- function(path2seq, user_email) {
+.submit <- function(path2seq, email) {
   fasta <- Biostrings::readAAStringSet(path2seq)
   sequence_str <- as.character(fasta[[1]])
 
   url_post <- "https://www.ebi.ac.uk/Tools/services/rest/iprscan5/run"
   headers_post <- c("Accept: text/plain", "Content-Type: application/x-www-form-urlencoded")
   data <- list(
-    email = user_email,
+    email = email,
     title = "riprscan",
     goterms = "false",
     pathways = "false",
     stype = "p",
-    appl = c("PfamA", "CDD"),
+    appl = "PfamA",
     sequence = sequence_str
   )
   ### global
@@ -124,8 +122,7 @@
   # update N polls & latest poll time
   tb_status <<- tb_status %>%
     dplyr::mutate(polls = ifelse(job_id == job_code, polls + 1, polls)) %>%
-    dplyr::mutate(t_latest_poll = ifelse(job_id == job_code,
-                                         as.POSIXct(Sys.time()), t_latest_poll))
+    dplyr::mutate(t_latest_poll = ifelse(job_id == job_code, as.POSIXct(Sys.time()), t_latest_poll))
 
   return(status)
 }
@@ -155,6 +152,8 @@
 
 .get_running_jobs <- function() {
   print(tb_status)
+  # handle case when tb_status is not yet init (or has NULL values)
+  #   needed for iterative calls to .get_running_jobs
   n_running <- tryCatch(
     expr = {
       n_running <- tb_status %>%
@@ -234,9 +233,7 @@
   idx_start <- 1L
   for (table in files) {
     input_file <- unlist(strsplit(table, ".tsv"))[[1]] # get input_file_name
-    data <- read.table(file.path(outfolder, table),
-                       sep = "\t", header = FALSE,
-                       col.names = cols, colClasses = col_classes)
+    data <- read.table(file.path(outfolder, table), sep = "\t", col.names = cols, header = FALSE, colClasses = col_classes)
     tb_joined <- rbind(tb_joined, data)
     tb_joined[idx_start:nrow(tb_joined), "InputFile"] <- input_file
     idx_start <- nrow(tb_joined)
@@ -245,12 +242,11 @@
   tb_joined <- tibble::as_tibble(tb_joined)
 
   cat("Writing joined table to", outfolder, "\n")
-  write.table(tb_joined, file = file.path(outfolder, "ipr_joined.tsv"),
-              sep = "\t", quote = FALSE, row.names = FALSE)
+  write.table(tb_joined, file = file.path(outfolder, "ipr_joined.tsv"), sep = "\t", quote = FALSE, row.names = FALSE)
   return(tb_joined)
 }
 
-submit_ipr <- function(path2seq, outfolder, user_email) {
+submit_ipr <- function(path2seq, outfolder, email) {
   #' @export
   #' @title Submit IPRscan analysis for protein sequences (multifasta input)
   #' @param path2seq path to your sequence file
@@ -276,7 +272,7 @@ submit_ipr <- function(path2seq, outfolder, user_email) {
     outfile <- file.path(outfolder, "iprout.tsv")
 
     # handle POST fail
-    submission_outcome <- .submit(path2seq, user_email)
+    submission_outcome <- .submit(path2seq, email)
     # .submit returns either "failed" or a job_id
     job_id <- ifelse(submission_outcome != "failed", submission_outcome, NULL)
     if (submission_outcome == "failed") {
@@ -311,17 +307,17 @@ submit_ipr <- function(path2seq, outfolder, user_email) {
       .update_status_table(job_id, status)
       # write tb_results
       write.table(tb_result,
-                  file.path(outfolder, "iprout.tsv"),
-                  sep = "\t",
-                  quote = FALSE,
-                  row.names = FALSE
+        file.path(outfolder, "iprout.tsv"),
+        sep = "\t",
+        quote = FALSE,
+        row.names = FALSE
       )
       # write tb_status
       write.table(tb_status,
-                  file.path(outfolder, "api.log"),
-                  sep = "\t",
-                  quote = FALSE,
-                  row.names = FALSE
+        file.path(outfolder, "api.log"),
+        sep = "\t",
+        quote = FALSE,
+        row.names = FALSE
       )
       return(tb_result)
     }
@@ -329,10 +325,10 @@ submit_ipr <- function(path2seq, outfolder, user_email) {
       .update_status_table(job_id, status)
       # write tb_status
       write.table(tb_status,
-                  file.path(outfolder, "api.log"),
-                  sep = "\t",
-                  quote = FALSE,
-                  row.names = FALSE
+        file.path(outfolder, "api.log"),
+        sep = "\t",
+        quote = FALSE,
+        row.names = FALSE
       )
       return(NULL)
     }
@@ -360,8 +356,8 @@ submit_ipr <- function(path2seq, outfolder, user_email) {
         cat("Submitting a batch of", (stop_idx - idx), "seqs\n")
         for (i in idx:stop_idx) {
           fasta <- file.path(split_seqs_folder, fasta_files[i])
-          cat("Submitting the ", i, "th", "sequence: ", fasta, " for analysis\n", sep = "")
-          job_id <- .submit(fasta, user_email)
+          cat("Submitting sequence[", i, "]: ", fasta, " for analysis\n", sep = "")
+          job_id <- .submit(fasta, email)
           cat("Returned job id: ", job_id, "\n")
           if (job_id != "failed") { # .submit() will return either job_id or 'failed'
             job_ids <- append(job_ids, job_id)
@@ -394,14 +390,15 @@ submit_ipr <- function(path2seq, outfolder, user_email) {
             .update_status_table(job_code = job, status_update = "failed")
           }
         }
+        Sys.sleep(3L)
       }
       cat("Number of sequences remaining: ", n_seqs, "\n", sep = "")
       cat("N running jobs: ", .get_running_jobs(), "\n", sep = "")
       cat("Total jobs: ", total_jobs, "\n", sep = "")
-      Sys.sleep(5L)
     }
   }
-  ### END job processing
+  ### END multifasta job processing
+  # single fasta returns early (refactor needed)
   cat(
     "All jobs have been processed or forgotten\n",
     "Interproscan submission complete\n"

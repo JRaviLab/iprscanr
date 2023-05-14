@@ -23,7 +23,8 @@ Imports:
     readr,
     tibble,
     dplyr,
-    stringr
+    stringr,
+    magrittr
 Suggests: 
     knitr,
     rmarkdown
