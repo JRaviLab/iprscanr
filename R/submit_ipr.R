@@ -1,3 +1,5 @@
+## Internal and user-facing functions to submit multifasta files to IPRscan
+
 .split_seqs <- function(fasta_path, outfolder) {
   cat("Splitting sequences\n", sep = "")
 
@@ -199,15 +201,13 @@
   if (is.null(tb_result)) {
     cat("No annotation for sequence, returning NULL\n")
     return(NULL)
-  }
-  else if (write_result == TRUE) {
+  } else if (write_result == TRUE) {
     outfile <- unlist(strsplit((.lookup_input_file(job_code)), ".faa"))[[1]]
     outfile <- file.path(outfolder, paste0(outfile, ".tsv"))
     cat(job_code, " complete\n", "Output file located at ", outfolder, "\n", sep = "")
     writeBin(res_get$content, outfile)
     return(tb_result)
-  }
-  else {
+  } else {
     return(tb_result)
   }
 }
@@ -320,8 +320,7 @@ submit_ipr <- function(path2seq, outfolder, email) {
         row.names = FALSE
       )
       return(tb_result)
-    }
-    else { # if job failed
+    } else { # if job failed
       .update_status_table(job_id, status)
       # write tb_status
       write.table(tb_status,
@@ -332,8 +331,7 @@ submit_ipr <- function(path2seq, outfolder, email) {
       )
       return(NULL)
     }
-  }
-  else {
+  } else {
     ### multi-fasta submit
     cat("Multifasta detected\n")
     split_seqs_folder <- .split_seqs(path2seq, outfolder)
