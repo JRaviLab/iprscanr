@@ -350,7 +350,7 @@ submit_ipr <- function(path2seq, outfolder, email) {
         # stop_idx has 2 conditions (1st batch submit && 2..N batch submit)
         stop_idx <- ifelse(n_submitted < 30, n_submissions, (idx + n_submissions - 1))
 
-        cat("Submitting a batch of", (stop_idx - idx), "seqs\n")
+        cat("Submitting a batch of", n_submissions, "seqs\n")
         for (i in idx:stop_idx) {
           fasta <- file.path(split_seqs_folder, fasta_files[i])
           cat("Submitting sequence[", i, "]: ", fasta, " for analysis\n", sep = "")

@@ -24,7 +24,8 @@ Imports:
     tibble,
     dplyr,
     stringr,
-    magrittr
+    magrittr,
+    ggplot2
 Suggests: 
     knitr,
     rmarkdown
