@@ -3,4 +3,5 @@
 export("%>%")
 export(job_time_hist)
 export(submit_ipr)
+export(APPLICATIONS)
 importFrom(magrittr,"%>%")

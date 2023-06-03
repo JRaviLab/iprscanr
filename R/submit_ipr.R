@@ -1,5 +1,13 @@
 ## Internal and user-facing functions to submit multifasta files to IPRscan
 
+.set_env_ipr <- function() {
+  env_ipr <<- new.env()
+}
+
+.validate_applications <- function(applications) {
+  
+}
+
 .split_seqs <- function(fasta_path, outfolder) {
   cat("Splitting sequences\n", sep = "")
 
@@ -41,7 +49,7 @@
 
 .construct_status_table <- function() {
   ### global
-  tb_status <<- tibble::new_tibble(
+  env_ipr$tb_status <<- tibble::new_tibble(
     list(
       input_file = c(NULL),
       job_id = c(NULL),
@@ -51,7 +59,7 @@
       t_latest_poll = c(NULL)
     )
   )
-  return(tb_status)
+  return(env_ipr$tb_status)
 }
 
 .add_job_status_table <- function(input_filename, job_code, submit_status) {
@@ -66,9 +74,9 @@
     )
   )
   # coerce tb_status to prevent type errors on bind_rows (not sure why, but sometimes it is converted to a double)
-  tb_status[["t_latest_poll"]] <<- as.POSIXct(tb_status[["t_latest_poll"]])
+  env_ipr$tb_status[["t_latest_poll"]] <<- as.POSIXct(env_ipr$tb_status[["t_latest_poll"]])
 
-  tb_status <<- dplyr::bind_rows(tb_status, new_job_row)
+  env_ipr$tb_status <<- dplyr::bind_rows(env_ipr$tb_status, new_job_row)
   return(NULL)
   # return(job_code)
 }
@@ -85,11 +93,10 @@
     goterms = "false",
     pathways = "false",
     stype = "p",
-    appl = "PfamA",
+    appl = paste0(env_ipr$.applications, collapse = ","),
     sequence = sequence_str
   )
-  ### global
-  total_jobs <<- total_jobs + 1
+  env_ipr$total_jobs <<- env_ipr$total_jobs + 1L
   res_post <- httr::POST(url_post, body = data, httr::add_headers(headers_post))
   job_id <- rawToChar(res_post$content)
   cat("Request info for ", job_id, ": \n", sep = "")
@@ -98,7 +105,7 @@
   status <- ifelse(as.integer(res_post$status) == 200L, "running", "failed")
   if (status == "failed") {
     message <- paste0(
-      "POST error with sequence: ", fasta_header, "\n",
+      "POST error with sequence: ", names(fasta), "\n",
       "Status code: ", as.integer(res_post$status), "\n"
     )
     warning(message)
@@ -122,7 +129,7 @@
   status <- ifelse(status == 200L, "completed", "running")
 
   # update N polls & latest poll time
-  tb_status <<- tb_status %>%
+  env_ipr$tb_status <<- env_ipr$tb_status %>%
     dplyr::mutate(polls = ifelse(job_id == job_code, polls + 1, polls)) %>%
     dplyr::mutate(t_latest_poll = ifelse(job_id == job_code, as.POSIXct(Sys.time()), t_latest_poll))
 
@@ -131,14 +138,14 @@
 
 .update_status_table <- function(job_code, status_update) {
   # change status for a given job_id row
-  tb_status <<- tb_status %>%
+  env_ipr$tb_status <<- env_ipr$tb_status %>%
     dplyr::mutate(status = ifelse(job_id == job_code, status_update, status))
-  cat("tb_status from .update_status_table()\n")
-  print(tb_status)
+  cat("env_ipr$tb_status from .update_status_table()\n")
+  print(env_ipr$tb_status)
 }
 
 .lookup_input_file <- function(job_code) {
-  filename <- tb_status %>%
+  filename <- env_ipr$tb_status %>%
     dplyr::filter(job_id == job_code) %>%
     dplyr::pull(input_file)
   return(filename)
@@ -146,7 +153,7 @@
 
 .lookup_polls <- function(job_code) {
   cat("Looking up poll count for: ", job_code, "\n", sep = "")
-  poll_count <- tb_status %>%
+  poll_count <- env_ipr$tb_status %>%
     dplyr::filter(job_id == job_code) %>%
     dplyr::pull(polls)
   return(poll_count)
@@ -157,7 +164,7 @@
   #   needed for iterative calls to .get_running_jobs
   n_running <- tryCatch(
     expr = {
-      n_running <- tb_status %>%
+      n_running <- env_ipr$tb_status %>%
         dplyr::filter(status == "running") %>%
         dplyr::count()
     },
@@ -230,9 +237,9 @@
   # files <- files[files != files[1]]
   tb_joined <- NULL
   idx_start <- 1L
-  for (table in files) {
-    input_file <- unlist(strsplit(table, ".tsv"))[[1]] # get input_file_name
-    data <- read.table(file.path(outfolder, table), sep = "\t", col.names = cols, header = FALSE, colClasses = col_classes)
+  for (tsv in files) {
+    input_file <- unlist(strsplit(tsv, ".tsv"))[[1]] # get input_file_name
+    data <- read.table(file.path(outfolder, tsv), sep = "\t", col.names = cols, header = FALSE, colClasses = col_classes)
     tb_joined <- rbind(tb_joined, data)
     tb_joined[idx_start:nrow(tb_joined), "InputFile"] <- input_file
     idx_start <- nrow(tb_joined)
@@ -245,7 +252,9 @@
   return(tb_joined)
 }
 
-submit_ipr <- function(path2seq, outfolder, email) {
+
+
+submit_ipr <- function(path2seq, outfolder, email, .applications = c("PfamA"), .save_tmp = FALSE) {
   #' @export
   #' @title Submit IPRscan analysis for protein sequences (multifasta input)
   #' @param path2seq path to your sequence file
@@ -253,16 +262,19 @@ submit_ipr <- function(path2seq, outfolder, email) {
   #' @param email required email ID for job submission (to track and prevent accidental misuse of the API)
   #' @keywords domains, domain architectures, protein characterization
 
-  total_jobs <<- 0
+  # init env_ipr for variables passed between multiple funcs
+  .set_env_ipr()
+  env_ipr$.applications <<- .applications
+  env_ipr$total_jobs <<- 0L
+  env_ipr$tb_status <<- .construct_status_table()
+  
   outfolder <- file.path(outfolder)
   if (!(dir.exists(outfolder))) {
     dir.create(outfolder)
   }
-  # copy input file to the output folder
   file.copy(from = path2seq, to = file.path(outfolder, "input.fa"))
-
-  tb_status <<- .construct_status_table()
-
+  tmp <- tempdir()
+  
   n_seqs <- nrow(Biostrings::fasta.index(path2seq))
 
   ### single seq submit
@@ -312,7 +324,7 @@ submit_ipr <- function(path2seq, outfolder, email) {
         row.names = FALSE
       )
       # write tb_status
-      write.table(tb_status,
+      write.table(env_ipr$tb_status,
         file.path(outfolder, "api.log"),
         sep = "\t",
         quote = FALSE,
@@ -322,7 +334,7 @@ submit_ipr <- function(path2seq, outfolder, email) {
     } else { # if job failed
       .update_status_table(job_id, status)
       # write tb_status
-      write.table(tb_status,
+      write.table(env_ipr$tb_status,
         file.path(outfolder, "api.log"),
         sep = "\t",
         quote = FALSE,
@@ -378,8 +390,8 @@ submit_ipr <- function(path2seq, outfolder, email) {
           job_ids <- job_ids[job_ids != job] # rm job id from vec when completed
         } else {
           n_polls <- .lookup_polls(job)
-          cat("tb_status:\n")
-          print(tb_status)
+          cat("env_ipr$tb_status:\n")
+          print(env_ipr$tb_status)
           cat("N polls for ", job, ": ", n_polls, "\n", sep = "")
           # forget jobs that are polled more than N times
           if (n_polls > 500) {
@@ -391,7 +403,7 @@ submit_ipr <- function(path2seq, outfolder, email) {
       }
       cat("Number of sequences remaining: ", n_seqs, "\n", sep = "")
       cat("N running jobs: ", .get_running_jobs(), "\n", sep = "")
-      cat("Total jobs: ", total_jobs, "\n", sep = "")
+      cat("Total jobs: ", env_ipr$total_jobs, "\n", sep = "")
     }
   }
   ### END multifasta job processing
@@ -402,13 +414,13 @@ submit_ipr <- function(path2seq, outfolder, email) {
   )
 
   # coerce t_last_poll column to POSIX datetime format
-  tb_status[["t_latest_poll"]] <<- as.POSIXct(tb_status[["t_latest_poll"]])
+  env_ipr$tb_status[["t_latest_poll"]] <<- as.POSIXct(env_ipr$tb_status[["t_latest_poll"]])
 
   # write api metadata table
   cat("Writing the api log\n")
-  tb_status <<- tb_status %>%
+  env_ipr$tb_status <<- env_ipr$tb_status %>%
     dplyr::mutate(job_duration = paste0(as.character(as.integer(t_latest_poll - t_submit)), "s"))
-  write.table(tb_status, file = file.path(outfolder, "api.log"), sep = "\t", quote = FALSE, row.names = FALSE)
+  write.table(env_ipr$tb_status, file = file.path(outfolder, "api.log"), sep = "\t", quote = FALSE, row.names = FALSE)
 
   # write and return the joined output
   cat("Joining results tables \n")
