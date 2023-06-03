@@ -1,0 +1,2 @@
+#' @export
+APPLICATIONS <- c("NCBIfam", "SFLD", "Phobius", "SignalP", "SignalP_EUK", "SignalP_GRAM_POSITIVE", "SignalP_GRAM_NEGATIVE", "SuperFamily", "Panther", "Gene3d", "HAMAP", "PrositeProfiles", "PrositePatterns", "Coils", "SMART", "CDD", "PRINTS", "PfamA", "MobiDBLite", "PIRSF", "TMHMM", "AntiFam", "FunFam", "PIRSR")
