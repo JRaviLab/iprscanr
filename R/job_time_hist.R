@@ -4,8 +4,7 @@
 #'
 #' @return A histogram plot object
 #' @export
-#'
-#' @examples
+
 job_time_hist <- function (ipr_log_path) {
   # possibly rename the 'api_log' in submit_ipr to 'ipr_log'
   # api is ambiguous in terms of the logs actual data
