@@ -1,11 +1,13 @@
-## Internal and user-facing functions to submit multifasta files to IPRscan
+## Internal and user-facing functions to submit FASTA files to InterProScan5 API
 
 .set_env_ipr <- function() {
   env_ipr <<- new.env()
 }
 
 .validate_applications <- function(applications) {
-  
+  # use to verify applications input
+  warning("not implemented yet")
+  return()
 }
 
 .split_seqs <- function(fasta_path, outfolder) {
@@ -24,6 +26,7 @@
     seq_header <- names(single_seq)[[1]]
 
     # try to fix filenames
+    # if there's a space, use as delimiter, and take first element
     if (grepl(" ", seq_header)) {
       seq_filename <- unlist(strsplit(seq_header, " "))[[1]]
     } else {
@@ -31,7 +34,8 @@
       seq_filename <- stringr::str_replace_all(seq_header, "[^[:alnum:]]", "")
     }
     # add a random suffix and '.faa' extension
-    random_suffix <- paste0(sample(c(letters, LETTERS, 0:9), size = 7, replace = TRUE),
+    random_suffix <- paste0(
+      sample(c(letters, LETTERS, 0:9), size = 7, replace = TRUE),
       collapse = ""
     )
     seq_filename <- paste0(seq_filename, "_", random_suffix, ".faa")
@@ -247,14 +251,13 @@
   return(tb_joined)
 }
 
-
-
 submit_ipr <- function(path2seq, outfolder, email, .applications = c("PfamA")) {
   #' @export
   #' @title Submit IPRscan analysis for protein sequences (multifasta input)
   #' @param path2seq path to your sequence file
   #' @param outfolder location for IPRscan outputs
   #' @param email required email ID for job submission (to track and prevent accidental misuse of the API)
+  #' @param .applications a vector containing at least one of the annotation methods provided by InterProScan (https://www.ebi.ac.uk/Tools/services/rest/iprscan5/parameterdetails/appl)
   #' @keywords domains, domain architectures, protein characterization
 
   # init env_ipr for variables passed between multiple funcs
@@ -275,147 +278,77 @@ submit_ipr <- function(path2seq, outfolder, email, .applications = c("PfamA")) {
   
   n_seqs <- nrow(Biostrings::fasta.index(path2seq))
 
-  ### single seq submit
-  if (n_seqs == 1L) {
-    cat("Single sequence detected\n")
-    outfile <- file.path(outfolder, "iprout.tsv")
+  split_seqs_folder <- .split_seqs(path2seq, outfolder)
+  fasta_files <- list.files(split_seqs_folder, pattern = ".faa")
 
-    # handle POST fail
-    submission_outcome <- .submit(path2seq, email)
-    # .submit returns either "failed" or a job_id
-    job_id <- ifelse(submission_outcome != "failed", submission_outcome, NULL)
-    if (submission_outcome == "failed") {
-      message <- cat("Single submission failed\n")
-      warning(message)
-      return(NULL)
+  n_seqs <- nrow(Biostrings::fasta.index(path2seq))
+  idx <- 1L
+  batch_size_default <- 30L
+  n_submitted <- 0L
+  job_ids <- c() # job id vector
+  while ((n_seqs > 0L) || ((.get_running_jobs()) > 0L)) {
+    # only allow 30 job submissions at a time
+    n_available <- 30L - .get_running_jobs() # .get_running_jobs() return N running jobs
+    n_submissions <- min(n_seqs, batch_size_default, n_available) # minimum of available seqs for submission
+
+    if (n_submissions > 0L) {
+      # stop_idx has 2 conditions (1st batch submit && 2..N batch submit)
+      stop_idx <- ifelse(n_submitted < 30, n_submissions, (idx + n_submissions - 1))
+
+      cat("Submitting a batch of", n_submissions, "seqs\n")
+      for (i in idx:stop_idx) {
+        fasta <- file.path(split_seqs_folder, fasta_files[i])
+        cat("Submitting sequence[", i, "]: ", fasta, " for analysis\n", sep = "")
+        job_id <- .submit(fasta, email)
+        cat("Returned job id: ", job_id, "\n")
+        if (job_id != "failed") { # .submit() will return either job_id or 'failed'
+          job_ids <- append(job_ids, job_id)
+        }
+      }
+      print("job_ids vec: ")
+      print(job_ids)
+      idx <- idx + n_submissions
+      n_seqs <- n_seqs - n_submissions
+      n_submitted <- n_submitted + n_submissions
     }
-    # cat("Full submission complete. Results located at: ", outfolder, "\n", sep = "")
-    status <- "submitted"
-    # continue while status does not equal 'complete' or 'failed'
 
-    n_polls <- 1L
-    while (!(status == "completed" | status == "failed")) {
+    # poll each job & update status table
+    for (job_id in job_ids) {
       status <- .poll_job(job_id)
       .update_status_table(job_id, status)
-      # quit after 180 tries; 15mins
-      if (n_polls > 180) {
-        status <- "failed"
-      }
-      n_polls <- n_polls + 1
-      Sys.sleep(5)
-    }
-
-    if (status == "completed") {
-      tb_result <- .get_job_result(job_id, outfolder, write_result = FALSE)
-      cols <- c(
-        "InputFile", "SeqMD5Digest", "SLength", "Analysis",
-        "DB.ID", "SignDesc", "StartLoc", "StopLoc", "Score",
-        "Status", "RunDate", "IPRAcc", "IPRDesc"
-      )
-      names(tb_result) <- cols
-      .update_status_table(job_id, status)
-      # write tb_results
-      write.table(tb_result,
-        file.path(outfolder, "iprout.tsv"),
-        sep = "\t",
-        quote = FALSE,
-        row.names = FALSE
-      )
-      # write tb_status
-      write.table(env_ipr$tb_status,
-        file.path(outfolder, "status_table.tsv"),
-        sep = "\t",
-        quote = FALSE,
-        row.names = FALSE
-      )
-      return(tb_result)
-    } else { # if job failed
-      .update_status_table(job_id, status)
-      # write tb_status
-      write.table(env_ipr$tb_status,
-        file.path(outfolder, "status_table.tsv"),
-        sep = "\t",
-        quote = FALSE,
-        row.names = FALSE
-      )
-      return(NULL)
-    }
-  } else {
-    ### multi-fasta submit
-    cat("Multifasta detected\n")
-    split_seqs_folder <- .split_seqs(path2seq, outfolder)
-    fasta_files <- list.files(split_seqs_folder, pattern = ".faa")
-
-    n_seqs <- nrow(Biostrings::fasta.index(path2seq))
-    idx <- 1L
-    batch_size_default <- 30L
-    n_submitted <- 0L
-    job_ids <- c() # job id vector
-    while ((n_seqs > 0L) || ((.get_running_jobs()) > 0L)) {
-      # only allow 30 job submissions at a time
-      n_available <- 30L - .get_running_jobs() # .get_running_jobs() return N running jobs
-      n_submissions <- min(n_seqs, batch_size_default, n_available) # minimum of available seqs for submission
-
-      if (n_submissions > 0L) {
-        # stop_idx has 2 conditions (1st batch submit && 2..N batch submit)
-        stop_idx <- ifelse(n_submitted < 30, n_submissions, (idx + n_submissions - 1))
-
-        cat("Submitting a batch of", n_submissions, "seqs\n")
-        for (i in idx:stop_idx) {
-          fasta <- file.path(split_seqs_folder, fasta_files[i])
-          cat("Submitting sequence[", i, "]: ", fasta, " for analysis\n", sep = "")
-          job_id <- .submit(fasta, email)
-          cat("Returned job id: ", job_id, "\n")
-          if (job_id != "failed") { # .submit() will return either job_id or 'failed'
-            job_ids <- append(job_ids, job_id)
-          }
-        }
-        print("job_ids vec: ")
-        print(job_ids)
-        idx <- idx + n_submissions
-        n_seqs <- n_seqs - n_submissions
-        n_submitted <- n_submitted + n_submissions
-      }
-
-      # poll each job & update status table
-      for (job_id in job_ids) {
-        status <- .poll_job(job_id)
+      # write/get result (if completed)
+      if (status == "completed") {
+        .get_job_result(job_id, outfolder, write_result = TRUE)
         .update_status_table(job_id, status)
-        # write/get result (if completed)
-        if (status == "completed") {
-          .get_job_result(job_id, outfolder, write_result = TRUE)
-          .update_status_table(job_id, status)
-          job_ids <- job_ids[job_ids != job_id] # rm job id from vec when completed
-        } else {
-          n_polls <- .lookup_polls(job_id)
-          cat("env_ipr$tb_status:\n")
-          print(env_ipr$tb_status)
-          cat("N polls for ", job_id, ": ", n_polls, "\n", sep = "")
-          # forget jobs that are polled more than N times
-          if (n_polls > 500) {
-            job_ids <- job_ids[job_ids != job_id]
-            .update_status_table(job_id, status_update = "failed")
-          }
+        job_ids <- job_ids[job_ids != job_id] # rm job id from vec when completed
+      } else {
+        n_polls <- .lookup_polls(job_id)
+        cat("env_ipr$tb_status:\n")
+        print(env_ipr$tb_status)
+        cat("N polls for ", job_id, ": ", n_polls, "\n", sep = "")
+        # forget jobs that are polled more than N times
+        if (n_polls > 500) {
+          job_ids <- job_ids[job_ids != job_id]
+          .update_status_table(job_id, status_update = "failed")
         }
-        Sys.sleep(3L)
       }
-      cat("Number of sequences remaining: ", n_seqs, "\n", sep = "")
-      cat("N running jobs: ", .get_running_jobs(), "\n", sep = "")
-      cat("Total jobs: ", env_ipr$total_jobs, "\n", sep = "")
+      Sys.sleep(3L)
     }
+    cat("Number of sequences remaining: ", n_seqs, "\n", sep = "")
+    cat("N running jobs: ", .get_running_jobs(), "\n", sep = "")
+    cat("Total jobs: ", env_ipr$total_jobs, "\n", sep = "")
   }
-  ### END multifasta job processing
-  # single fasta returns early (refactor needed)
+
   cat(
     "All jobs have been processed or forgotten\n",
     "Interproscan submission complete\n"
   )
 
-  # coerce t_last_poll column to POSIX datetime format
+  # coerce t_latest_poll column to POSIX datetime format
   env_ipr$tb_status[["t_latest_poll"]] <<- as.POSIXct(env_ipr$tb_status[["t_latest_poll"]])
 
-  # write api metadata table
-  cat("Writing the job_status table\n")
+  # write job polling metadata table
+  cat("Writing the job_status table to", outfolder, "\n")
   env_ipr$tb_status <<- env_ipr$tb_status %>%
     dplyr::mutate(job_duration = paste0(as.character(as.integer(t_latest_poll - t_submit)), "s"))
   write.table(env_ipr$tb_status, file = file.path(outfolder, "job_status.tsv"), sep = "\t", quote = FALSE, row.names = FALSE)
