@@ -237,8 +237,9 @@
     "c", "c", "n", "n", "n",
     "c", "c", "c", "c"
   )
-  tb_joined <- bind_rows(
-    lapply(files, read_tsv, col_names = col_names, col_types = col_types)
+  # read all tables and bind the rows
+  tb_joined <- dplyr::bind_rows(
+    lapply(files, readr::read_tsv, col_names = col_names, col_types = col_types)
   )
 
   cat("Writing joined table to", outfolder, "\n")
