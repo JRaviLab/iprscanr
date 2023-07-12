@@ -9,9 +9,15 @@ An R package for accessing InterProScan5 API | for protein scanning & characteri
 ## Usage
 ```
 library(iprscanr)
-submit_ipr(path2seq = here("inst/extdata/ex-in-CAA75348.1.faa"),
-           outfolder = here("inst/extdata"),
-           email = "jravilab.msu@gmail.com")
+# use example data included with package
+submit_ipr(path2seq = system.file(file.path("extdata", "ex-in-CAA75348.1.faa"), package = "iprscanr"),
+           outfolder = system.file("extdata", package = "iprscanr"),
+           email = "jravilab.msu@gmail.com",
+           .applications = c("PfamA", "Phobius")
+)
+
+# print a character vector of all InterProScan applications
+print(APPLICATIONS)
 ```
 
 ## Documentation
