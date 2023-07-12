@@ -1,6 +1,6 @@
 Package: iprscanr
 Title: Access InterProScan5 API with R
-Version: 0.0.0.9000
+Version: 0.0.2
 Authors@R:
         c(
         person("Jacob", "Krol", , "jacob.krol@cuanschutz.edu", role = c("aut", "cre"),

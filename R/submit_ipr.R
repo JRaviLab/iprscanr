@@ -1,16 +1,37 @@
-## Internal and user-facing functions to submit FASTA files to InterProScan5 API
+# Internal and user-facing functions to submit FASTA files to InterProScan5 API
+# notably submit_ipr()
 
 .set_env_ipr <- function() {
+  # to pass variables across functions we are using an environment
+  # in short, we access variables across functions without using the global env directly
+  # note: the environment itself (`env_ipr`) is accessible in the global env
+  # we set variables in this environment using the `<<-` operator too
+  # to persist outside of the function
   env_ipr <<- new.env()
 }
 
-.validate_applications <- function(applications) {
-  # use to verify applications input
-  warning("not implemented yet")
-  return()
+### input validation for submit_ipr()
+.validate_appl <- function(appl) {
+  # use to verify ipr's appl parameter
+  result <- all(appl %in% APPL)
+  if (result) return(TRUE) else stop("invalid value in appl parameter")
+}
+.validate_stype <- function(stype) {
+    if ((stype == "p") || (stype == "n")) {
+        return(TRUE)
+    } else {
+        stop(paste0("invalid value in <stype> parameter; must be 'p' for ",
+                    "protein sequences OR 'n' for nucleotide sequences"))
+    }
+}
+.validate_email <- function(email) {
+  # just checking it exists and is a string
+  if (is.character(email)) return(TRUE) else stop("must provide a valid email string for submission")
 }
 
 .split_seqs <- function(fasta_path, outfolder) {
+  # use Biostrings to split a multifasta into indvidual fasta files for job
+  # posting
   cat("Splitting sequences\n", sep = "")
 
   split_folder <- file.path(outfolder, "split_seqs")
@@ -33,12 +54,13 @@
       # replace any alphanumeric characters otherwise
       seq_filename <- stringr::str_replace_all(seq_header, "[^[:alnum:]]", "")
     }
-    # add a random suffix and '.faa' extension
+    # add a random suffix and '.fa' extension
     random_suffix <- paste0(
       sample(c(letters, LETTERS, 0:9), size = 7, replace = TRUE),
       collapse = ""
     )
-    seq_filename <- paste0(seq_filename, "_", random_suffix, ".faa")
+    seq_filename <- paste0(seq_filename, "_", random_suffix, ".fa")
+
     cat("split_folder: ", split_folder, "seq_filename: ", seq_filename, "\n", sep = "")
     Biostrings::writeXStringSet(single_seq, file.path(split_folder, seq_filename))
 
@@ -51,7 +73,6 @@
 }
 
 .construct_status_table <- function() {
-  ### global
   env_ipr$tb_status <<- tibble::new_tibble(
     list(
       input_file = c(NULL),
@@ -66,12 +87,14 @@
 }
 
 .add_job_status_table <- function(input_filename, job_id, submit_status) {
-  # get cur env for specifying job_id func param
-  cur_env <- environment()
+  # intialize an interproscan job row in the poll table right after submission
+
+  # get cur env for disambiguation of job_id func param from the list name
+  func_env <- environment()
   new_job_row <- tibble::as_tibble_row(
     list(
       input_file = input_filename,
-      job_id = get("job_id", cur_env),
+      job_id = get("job_id", func_env),
       status = submit_status,
       polls = 0L,
       t_submit = as.POSIXct(Sys.time()),
@@ -80,33 +103,36 @@
   )
   # coerce tb_status to prevent type errors on bind_rows (not sure why, but sometimes it is converted to a double)
   env_ipr$tb_status[["t_latest_poll"]] <<- as.POSIXct(env_ipr$tb_status[["t_latest_poll"]])
-
   env_ipr$tb_status <<- dplyr::bind_rows(env_ipr$tb_status, new_job_row)
   return(NULL)
   # return(job_code)
 }
 
 .submit <- function(path2seq, email) {
+  # use httr to POST the ipr job
   fasta <- Biostrings::readAAStringSet(path2seq)
   sequence_str <- as.character(fasta[[1]])
 
   url_post <- "https://www.ebi.ac.uk/Tools/services/rest/iprscan5/run"
   headers_post <- c("Accept: text/plain", "Content-Type: application/x-www-form-urlencoded")
+  # setup the POST body; job arguments
   data <- list(
     email = email,
-    title = "riprscan",
+    title = paste0("iprscanr-", packageVersion("iprscanr")),
     goterms = "false",
     pathways = "false",
-    stype = "p",
-    appl = paste0(env_ipr$.applications, collapse = ","),
+    stype = env_ipr$stype,
+    appl = paste0(env_ipr$appl, collapse = ","),
     sequence = sequence_str
   )
   env_ipr$total_jobs <<- env_ipr$total_jobs + 1L
   res_post <- httr::POST(url_post, body = data, httr::add_headers(headers_post))
+  # an ipr job_id is returned from the POST request when successful
   job_id <- rawToChar(res_post$content)
   cat("Request info for ", job_id, ": \n", sep = "")
   print(res_post$request)
 
+  # verify if job POST was successful
   status <- ifelse(as.integer(res_post$status) == 200L, "running", "failed")
   if (status == "failed") {
     message <- paste0(
@@ -124,6 +150,9 @@
 
 
 .poll_job <- function(job_id) {
+  # "polling" a job is to make a GET request for the status
+  # instead of polling for job info, we're directly polling for the result
+  # out of simplicity; may be worth refactoring in the future
   cat("Polling job: ", job_id, "\n", sep = "")
   url_get_base <- "https://www.ebi.ac.uk/Tools/services/rest/iprscan5/result/"
   url_get <- paste0(url_get_base, job_id, "/tsv")
@@ -134,44 +163,46 @@
   status <- ifelse(status == 200L, "completed", "running")
 
   # update N polls & latest poll time
-  n_polls <- env_ipr$tb_status$polls[env_ipr$tb_status$job_id == job_id] 
+  n_polls <- env_ipr$tb_status$polls[env_ipr$tb_status$job_id == job_id]
   env_ipr$tb_status$polls[env_ipr$tb_status$job_id == job_id] <<- n_polls + 1
   env_ipr$tb_status$t_latest_poll[env_ipr$tb_status$job_id == job_id] <<- as.POSIXct(Sys.time())
   return(status)
 }
 
 .update_status_table <- function(job_id, status_update) {
-  # change status for a given job_id row
+  # update a the status value for a job_id row in the poll table
   env_ipr$tb_status$status[env_ipr$tb_status$job_id == job_id] <<- status_update
   cat("env_ipr$tb_status from .update_status_table()\n")
   print(env_ipr$tb_status)
 }
 
 .lookup_input_file <- function(job_id) {
-  # get cur env for specifying job_id func param
-  cur_env <- environment()
-  
+  # get cur env for disambiguation of job_id func param from the list name
+  func_env <- environment()
+
   filename <- env_ipr$tb_status %>%
-    dplyr::filter(job_id == get("job_id", cur_env)) %>%
+    dplyr::filter(job_id == get("job_id", func_env)) %>%
     dplyr::pull(input_file)
   return(filename)
 }
 
 .lookup_polls <- function(job_id) {
-  # get cur env for specifying job_id func param
-  cur_env <- environment()
-  
+  # get cur env for disambiguation of job_id func param from the list name
+  func_env <- environment()
+
   cat("Looking up poll count for: ", job_id, "\n", sep = "")
   n_polls <- env_ipr$tb_status %>%
-    dplyr::filter(job_id == get("job_id", cur_env)) %>%
+    dplyr::filter(job_id == get("job_id", func_env)) %>%
     dplyr::pull(polls)
-  cat("Polls for", job_id, ":", n_polls)
+  cat("Polls for", job_id, ":", n_polls, "\n")
   return(n_polls)
 }
 
 .get_running_jobs <- function() {
+  # check the poll table to see how many jobs are running
+
   # handle case when tb_status is not yet init (or has NULL values)
-  #   needed for iterative calls to .get_running_jobs
+  # needed for iterative calls to .get_running_jobs
   n_running <- tryCatch(
     expr = {
       n_running <- env_ipr$tb_status %>%
@@ -194,13 +225,14 @@
   return(n_running)
 }
 
-.get_job_result <- function(job_id, outfolder, write_result = TRUE) {
+.get_job_result <- function(job_id, outfolder) {
+  # parse the job result response and write the content (if there were any ipr hits)
   url_get_base <- "https://www.ebi.ac.uk/Tools/services/rest/iprscan5/result/"
   url_get <- paste0(url_get_base, job_id, "/tsv")
   header_get <- "Accept: text/tab-separated-values"
 
   res_get <- httr::GET(url_get, httr::add_headers(header_get))
-  # parse and write tsv
+  # parse GET response to text
   plain_text <- rawToChar(res_get$content)
   print("Parsing job output text: ")
   print(plain_text)
@@ -214,36 +246,54 @@
       NULL
     }
   )
+  # write the table if there were any ipr hits
   if (is.null(tb_result)) {
     cat("No annotation for sequence, returning NULL\n")
     return(NULL)
-  } else if (write_result == TRUE) {
-    outfile <- unlist(strsplit((.lookup_input_file(job_id)), ".faa"))[[1]]
+  } else {
+    outfile <- unlist(strsplit((.lookup_input_file(job_id)), ".fa"))[[1]]
     outfile <- file.path(outfolder, "ipr_out", paste0(outfile, ".tsv"))
     cat(job_id, " complete\n", "Output file located at ", outfolder, "\n", sep = "")
     writeBin(res_get$content, outfile)
     return(tb_result)
-  } else {
-    return(tb_result)
   }
 }
 
-.join_output <- function(outfolder) {
+.set_filename_col <- function(outfolder) {
+  # used to overwrite the first column of ipr output with the filename of the input
+  # useful for traceback on the input fasta file names
   files <- list.files(file.path(outfolder, "ipr_out"), pattern = "\\.tsv$", full.names = TRUE)
-  
-  col_names <- c(
-    "InputFile", "SeqMD5Digest", "SLength", "Analysis",
-    "DB.ID", "SignDesc", "StartLoc", "StopLoc", "Score",
-    "Status", "RunDate", "IPRAcc", "IPRDesc"
+  for (file in files) {
+    tb <- readr::read_tsv(file , col_names = F)
+    # overwrite first column, setting it to the name of the file itself
+    # useful for when the joined table is created downstream
+    tb[, 1] <- basename(file)
+    readr::write_tsv(tb, file, col_names = F)
+  }
+  return(NULL)
+}
+
+.join_output <- function(outfolder) {
+  # since single tsvs are returned for each job, we join them here into a
+  # master table and write it to the top level of the output folder
+  # also set colnames and coltypes
+  files <- list.files(file.path(outfolder, "ipr_out"), pattern = "\\.tsv$", full.names = TRUE)
+
+  names <- c(
+    "file_name", "seq_MD5_digest", "seq_length", "analysis",
+    "db_id", "sign_desc", "start_loc", "stop_loc", "score",
+    "status", "run_date", "ipr_acc", "ipr_desc"
   )
-  col_types <- c(
-    "c", "c", "n", "c",
-    "c", "c", "n", "n", "n",
-    "c", "c", "c", "c"
+  # coerce all columns to chr type because InterPro uses "-" as missing value char
+  # ran into multiple using chr vec to define col types, so i'm using this method instead
+  types <- list(readr::col_character(), readr::col_character(), readr::col_character(), readr::col_character(),
+                readr::col_character(), readr::col_character(), readr::col_character(), readr::col_character(), readr::col_character(),
+                readr::col_character(), readr::col_character(), readr::col_character(), readr::col_character()
   )
   # read all tables and bind the rows
+  # note: InterProScan uses the '-' to denote missing values
   tb_joined <- dplyr::bind_rows(
-    lapply(files, readr::read_tsv, col_names = col_names, col_types = col_types)
+    lapply(files, readr::read_tsv, col_names = names, col_types = types, na = c('-'))
   )
 
   cat("Writing joined table to", outfolder, "\n")
@@ -251,21 +301,30 @@
   return(tb_joined)
 }
 
-submit_ipr <- function(path2seq, outfolder, email, .applications = c("PfamA")) {
+submit_ipr <- function(path2seq, outfolder, email, appl = c("PfamA"),
+                       stype = "p", max_polls = 300) {
   #' @export
-  #' @title Submit IPRscan analysis for protein sequences (multifasta input)
-  #' @param path2seq path to your sequence file
-  #' @param outfolder location for IPRscan outputs
-  #' @param email required email ID for job submission (to track and prevent accidental misuse of the API)
-  #' @param .applications a vector containing at least one of the annotation methods provided by InterProScan (https://www.ebi.ac.uk/Tools/services/rest/iprscan5/parameterdetails/appl)
+  #' @title Submit sequences for InterProScan5 analysis
+  #' @param path2seq - **str** path to input FASTA file
+  #' @param outfolder - **str** location for IPRscan output directory
+  #' @param email - **str** required email ID for job submission
+  #' (to track and prevent accidental misuse of the API)
+  #' @param appl - **chr vec** a vector containing at least one of the annotation
+  #' @param stype - **str** "Protein" OR "Nucleic Acid"
+  #' methods provided by [InterProScan](https://www.ebi.ac.uk/Tools/services/rest/iprscan5/parameterdetails/appl)
   #' @keywords domains, domain architectures, protein characterization
+
+  # validate applications
+  .validate_appl(appl)
+  .validate_stype(stype)
 
   # init env_ipr for variables passed between multiple funcs
   .set_env_ipr()
-  env_ipr$.applications <<- .applications
+  env_ipr$appl <<- appl
+  env_ipr$stype <<- stype
   env_ipr$total_jobs <<- 0L
   env_ipr$tb_status <<- .construct_status_table()
-  
+
   outfolder <- file.path(outfolder)
   if (!(dir.exists(outfolder))) {
     dir.create(outfolder)
@@ -275,11 +334,11 @@ submit_ipr <- function(path2seq, outfolder, email, .applications = c("PfamA")) {
     dir.create(ipr_out)
   }
   file.copy(from = path2seq, to = file.path(outfolder, "input.fa"))
-  
+
   n_seqs <- nrow(Biostrings::fasta.index(path2seq))
 
   split_seqs_folder <- .split_seqs(path2seq, outfolder)
-  fasta_files <- list.files(split_seqs_folder, pattern = ".faa")
+  fasta_files <- list.files(split_seqs_folder, pattern = ".fa")
 
   n_seqs <- nrow(Biostrings::fasta.index(path2seq))
   idx <- 1L
@@ -289,7 +348,7 @@ submit_ipr <- function(path2seq, outfolder, email, .applications = c("PfamA")) {
   while ((n_seqs > 0L) || ((.get_running_jobs()) > 0L)) {
     # only allow 30 job submissions at a time
     n_available <- 30L - .get_running_jobs() # .get_running_jobs() return N running jobs
-    n_submissions <- min(n_seqs, batch_size_default, n_available) # minimum of available seqs for submission
+    n_submissions <- min(n_seqs, batch_size_default, n_available) # minimum of available seqs for submission (prevents going over 30 job limit)
 
     if (n_submissions > 0L) {
       # stop_idx has 2 conditions (1st batch submit && 2..N batch submit)
@@ -318,7 +377,7 @@ submit_ipr <- function(path2seq, outfolder, email, .applications = c("PfamA")) {
       .update_status_table(job_id, status)
       # write/get result (if completed)
       if (status == "completed") {
-        .get_job_result(job_id, outfolder, write_result = TRUE)
+        .get_job_result(job_id, outfolder)
         .update_status_table(job_id, status)
         job_ids <- job_ids[job_ids != job_id] # rm job id from vec when completed
       } else {
@@ -326,8 +385,8 @@ submit_ipr <- function(path2seq, outfolder, email, .applications = c("PfamA")) {
         cat("env_ipr$tb_status:\n")
         print(env_ipr$tb_status)
         cat("N polls for ", job_id, ": ", n_polls, "\n", sep = "")
-        # forget jobs that are polled more than N times
-        if (n_polls > 500) {
+        # forget jobs that are polled more than <max_polls> times
+        if (n_polls > max_polls) {
           job_ids <- job_ids[job_ids != job_id]
           .update_status_table(job_id, status_update = "failed")
         }
@@ -352,6 +411,9 @@ submit_ipr <- function(path2seq, outfolder, email, .applications = c("PfamA")) {
   env_ipr$tb_status <<- env_ipr$tb_status %>%
     dplyr::mutate(job_duration = paste0(as.character(as.integer(t_latest_poll - t_submit)), "s"))
   write.table(env_ipr$tb_status, file = file.path(outfolder, "job_status.tsv"), sep = "\t", quote = FALSE, row.names = FALSE)
+
+  # set the first column to the file names for input sequence identification
+  .set_filename_col(outfolder)
 
   # write and return the joined output
   cat("Joining results tables \n")

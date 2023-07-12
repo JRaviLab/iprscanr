@@ -2,19 +2,42 @@
 % Please edit documentation in R/submit_ipr.R
 \name{submit_ipr}
 \alias{submit_ipr}
-\title{Submit IPRscan analysis for protein sequences (multifasta input)}
+\title{Submit sequences for InterProScan5 analysis}
 \usage{
-submit_ipr(path2seq, outfolder, email)
+submit_ipr(
+  path2seq,
+  outfolder,
+  email,
+  appl = c("PfamA"),
+  stype = "p",
+  max_polls = 300
+)
 }
 \arguments{
-\item{path2seq}{path to your sequence file}
+\item{path2seq}{\itemize{
+\item \strong{str} path to input FASTA file
+}}
 
-\item{outfolder}{location for IPRscan outputs}
+\item{outfolder}{\itemize{
+\item \strong{str} location for IPRscan output directory
+}}
 
-\item{email}{required email ID for job submission (to track and prevent accidental misuse of the API)}
+\item{email}{\itemize{
+\item \strong{str} required email ID for job submission
+(to track and prevent accidental misuse of the API)
+}}
+
+\item{appl}{\itemize{
+\item \strong{chr vec} a vector containing at least one of the annotation
+}}
+
+\item{stype}{\itemize{
+\item \strong{str} "Protein" OR "Nucleic Acid"
+methods provided by \href{https://www.ebi.ac.uk/Tools/services/rest/iprscan5/parameterdetails/appl}{InterProScan}
+}}
 }
 \description{
-Submit IPRscan analysis for protein sequences (multifasta input)
+Submit sequences for InterProScan5 analysis
 }
 \keyword{architectures,}
 \keyword{characterization}
