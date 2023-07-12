@@ -13,11 +13,16 @@ library(iprscanr)
 submit_ipr(path2seq = system.file(file.path("extdata", "ex-in-CAA75348.1.faa"), package = "iprscanr"),
            outfolder = system.file("extdata", package = "iprscanr"),
            email = "jravilab.msu@gmail.com",
-           .applications = c("PfamA", "Phobius")
+           applications = c("PfamA", "Phobius")
 )
 
 # print a character vector of all InterProScan applications
-print(APPLICATIONS)
+> APPL
+ [1] "NCBIfam"               "SFLD"                  "Phobius"               "SignalP"               "SignalP_EUK"          
+ [6] "SignalP_GRAM_POSITIVE" "SignalP_GRAM_NEGATIVE" "SuperFamily"           "Panther"               "Gene3d"               
+[11] "HAMAP"                 "PrositeProfiles"       "PrositePatterns"       "Coils"                 "SMART"                
+[16] "CDD"                   "PRINTS"                "PfamA"                 "MobiDBLite"            "PIRSF"                
+[21] "TMHMM"                 "AntiFam"               "FunFam"                "PIRSR"
 ```
 
 ## Documentation
